@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copy',
+      copy_success: 'Copied',
+      copy_failure: 'Copy failed'
+    }
+  };
+</script>
+
+  <meta name="description" content="快速在GCP部屬 Kubernetes在Ubuntu下安裝 gcloud 及 kubectlgcloud 是 Google Cloud SDK 的部分功能，您必須在系統上下載及安裝 SDK 並將其初始化後，才能開始使用 gcloud。 1234567891011121314# Create environment variable for correct distributionexport CL">
+<meta name="keywords" content="K8s,GCP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="快速在 GCP 部屬 Kubernetes">
+<meta property="og:url" content="http://yoursite.com/2018/10/04/2018-10-04-快速在-GCP-部屬-Kubernetes/index.html">
+<meta property="og:site_name" content="yctt&#39;s Blog">
+<meta property="og:description" content="快速在GCP部屬 Kubernetes在Ubuntu下安裝 gcloud 及 kubectlgcloud 是 Google Cloud SDK 的部分功能，您必須在系統上下載及安裝 SDK 並將其初始化後，才能開始使用 gcloud。 1234567891011121314# Create environment variable for correct distributionexport CL">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-07-22T03:26:38.023Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="快速在 GCP 部屬 Kubernetes">
+<meta name="twitter:description" content="快速在GCP部屬 Kubernetes在Ubuntu下安裝 gcloud 及 kubectlgcloud 是 Google Cloud SDK 的部分功能，您必須在系統上下載及安裝 SDK 並將其初始化後，才能開始使用 gcloud。 1234567891011121314# Create environment variable for correct distributionexport CL">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2018/10/04/2018-10-04-快速在-GCP-部屬-Kubernetes/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  
+  <title>快速在 GCP 部屬 Kubernetes | yctt's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">yctt's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/10/04/2018-10-04-快速在-GCP-部屬-Kubernetes/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="yctt">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="yctt's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">快速在 GCP 部屬 Kubernetes
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-10-04 00:00:00" itemprop="dateCreated datePublished" datetime="2018-10-04T00:00:00+08:00">2018-10-04</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-07-22 11:26:38" itemprop="dateModified" datetime="2019-07-22T11:26:38+08:00">2019-07-22</time>
+              </span>
+            
+          
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="快速在GCP部屬-Kubernetes"><a href="#快速在GCP部屬-Kubernetes" class="headerlink" title="快速在GCP部屬 Kubernetes"></a>快速在GCP部屬 Kubernetes</h1><h2 id="在Ubuntu下安裝-gcloud-及-kubectl"><a href="#在Ubuntu下安裝-gcloud-及-kubectl" class="headerlink" title="在Ubuntu下安裝 gcloud 及 kubectl"></a>在Ubuntu下安裝 gcloud 及 kubectl</h2><p>gcloud 是 Google Cloud SDK 的部分功能，您必須在系統上下載及安裝 SDK 並將其初始化後，才能開始使用 gcloud。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Create environment variable for correct distribution</span></span><br><span class="line"><span class="built_in">export</span> CLOUD_SDK_REPO=<span class="string">"cloud-sdk-<span class="variable">$(lsb_release -c -s)</span>"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Add the Cloud SDK distribution URI as a package source</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">"deb http://packages.cloud.google.com/apt <span class="variable">$CLOUD_SDK_REPO</span> main"</span> | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list</span><br><span class="line"></span><br><span class="line"><span class="comment"># Import the Google Cloud Platform public key</span></span><br><span class="line">curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -</span><br><span class="line"></span><br><span class="line"><span class="comment"># Update the package list and install the Cloud SDK</span></span><br><span class="line">sudo apt-get update &amp;&amp; sudo apt-get install google-cloud-sdk</span><br><span class="line"></span><br><span class="line"><span class="comment"># Install the kubectl tool</span></span><br><span class="line">sudo apt-get install kubectl</span><br></pre></td></tr></table></figure>
+
+<h3 id="其他系統安裝-google-Cloud-SDK-方式"><a href="#其他系統安裝-google-Cloud-SDK-方式" class="headerlink" title="其他系統安裝 google Cloud SDK 方式"></a>其他系統安裝 google Cloud SDK 方式</h3><p><a href="https://cloud.google.com/sdk/docs/quickstarts?hl=zh-tw" target="_blank" rel="noopener">https://cloud.google.com/sdk/docs/quickstarts?hl=zh-tw</a></p>
+<h3 id="初始化-Cloud-SDK"><a href="#初始化-Cloud-SDK" class="headerlink" title="初始化 Cloud SDK"></a>初始化 Cloud SDK</h3><ol>
+<li>執行 gcloud init 開始SDK設定</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$gcloud</span> init</span><br><span class="line">Welcome! This <span class="built_in">command</span> will take you through the configuration of gcloud.</span><br><span class="line"></span><br><span class="line">Your current configuration has been <span class="built_in">set</span> to: [default]</span><br><span class="line"></span><br><span class="line">You can skip diagnostics next time by using the following flag:</span><br><span class="line">gcloud init --skip-diagnostics</span><br><span class="line"></span><br><span class="line">Network diagnostic detects and fixes <span class="built_in">local</span> network connection issues.</span><br><span class="line">Checking network connection...done.</span><br><span class="line">Reachability Check passed.</span><br><span class="line">Network diagnostic passed (1/1 checks passed).</span><br><span class="line"></span><br><span class="line">You must <span class="built_in">log</span> <span class="keyword">in</span> to <span class="built_in">continue</span>. Would you like to <span class="built_in">log</span> <span class="keyword">in</span> (Y/n)?</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li><p>在瀏覽器上，使用 Google 使用者帳戶登入，並於提示字元出現時按一下 [允許] 來獲得存取 Google Cloud Platform 資源的權限。</p>
+</li>
+<li><p>接著選預設的專案</p>
+</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">You are logged <span class="keyword">in</span> as: [yucheng@localhost].</span><br><span class="line"></span><br><span class="line">Pick cloud project to use: </span><br><span class="line"> [1] basic-radius-230404</span><br><span class="line"> [2] Create a new project</span><br><span class="line">Please enter numeric choice or text value (must exactly match list </span><br><span class="line">item):</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>如果預設的專案已經有啟用 Google Compute Engine API,接下來會讓您選擇預設的Compute Engine Zone</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Your current project has been <span class="built_in">set</span> to: [basic-radius-230404].</span><br><span class="line"></span><br><span class="line">Do you want to configure a default Compute Region and Zone? (Y/n)? Y</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Which Google Compute Engine zone would you like to use as project</span><br><span class="line">default?</span><br><span class="line">If you <span class="keyword">do</span> not specify a zone via a <span class="built_in">command</span> line flag <span class="keyword">while</span> working</span><br><span class="line">with Compute Engine resources, the default is assumed.</span><br><span class="line"> ...</span><br><span class="line"> [26] asia-east1-b</span><br><span class="line"> [27] asia-east1<span class="_">-a</span></span><br><span class="line"> [28] asia-east1-c</span><br><span class="line"> ...</span><br><span class="line">Did not <span class="built_in">print</span> [3] options.</span><br><span class="line">Too many options [53]. Enter <span class="string">"list"</span> at prompt to <span class="built_in">print</span> choices fully.</span><br><span class="line">Please enter numeric choice or text value (must exactly match list</span><br><span class="line">item):  26</span><br></pre></td></tr></table></figure>
+
+<h3 id="建立GKE-Cluster"><a href="#建立GKE-Cluster" class="headerlink" title="建立GKE Cluster"></a>建立GKE Cluster</h3><ol>
+<li><p>建立GKE Cluster前需確認預設專案已經開啟 Kubernetes Compute API</p>
+</li>
+<li><p>接下來使用 gcloud container clusters create 來建立一組GKE Cluster</p>
+</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ gcloud container clusters create [NAME]</span><br><span class="line">Creating cluster mygke...done.</span><br><span class="line">Created [https://container.googleapis.com/v1/projects/my-gcp-project/zones/asia-east1<span class="_">-a</span>/clusters/mygke].</span><br><span class="line">kubeconfig entry generated <span class="keyword">for</span> mygke.</span><br><span class="line">NAME   ZONE          MASTER_VERSION  MASTER_IP        MACHINE_TYPE   NUM_NODES  STATUS</span><br><span class="line">kubr-cluster  asia-east1<span class="_">-a</span>  1.1.2           104.199.140.230  n1-standard-1  3          RUNNING</span><br></pre></td></tr></table></figure>
+
+<h2 id="完成以上動作後-就已經有一個配置完成的cluster可以使用"><a href="#完成以上動作後-就已經有一個配置完成的cluster可以使用" class="headerlink" title="完成以上動作後, 就已經有一個配置完成的cluster可以使用"></a>完成以上動作後, 就已經有一個配置完成的cluster可以使用</h2><hr>
+<h3 id="檢查目前-cluster的狀態"><a href="#檢查目前-cluster的狀態" class="headerlink" title="檢查目前 cluster的狀態"></a>檢查目前 cluster的狀態</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$kubectl</span> get componentstatuses</span><br><span class="line">NAME                 STATUS    MESSAGE              ERROR</span><br><span class="line">etcd-1               Healthy   &#123;<span class="string">"health"</span>: <span class="string">"true"</span>&#125;</span><br><span class="line">scheduler            Healthy   ok</span><br><span class="line">controller-manager   Healthy   ok</span><br><span class="line">etcd-0               Healthy   &#123;<span class="string">"health"</span>: <span class="string">"true"</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="列出所有的node"><a href="#列出所有的node" class="headerlink" title="列出所有的node"></a>列出所有的node</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$kubectl</span> get nodes</span><br><span class="line">NAME                                          STATUS   ROLES    AGE   VERSION</span><br><span class="line">gke-kubr-cluster-default-pool-a565d9f3-295j   Ready    &lt;none&gt;   14m   v1.9.7-gke.6</span><br><span class="line">gke-kubr-cluster-default-pool-a565d9f3-dk7m   Ready    &lt;none&gt;   14m   v1.9.7-gke.6</span><br><span class="line">gke-kubr-cluster-default-pool-a565d9f3-hffs   Ready    &lt;none&gt;   14m   v1.9.7-gke.6</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看某一個node的詳細資訊"><a href="#查看某一個node的詳細資訊" class="headerlink" title="查看某一個node的詳細資訊"></a>查看某一個node的詳細資訊</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$kubectl</span> describe nodes gke-kubr-cluster-default-pool-a565d9f3-295j</span><br><span class="line">Name:               gke-kubr-cluster-default-pool-a565d9f3-295j</span><br><span class="line">Roles:              &lt;none&gt;</span><br><span class="line">Labels:             beta.kubernetes.io/arch=amd64</span><br><span class="line">                    beta.kubernetes.io/fluentd-ds-ready=<span class="literal">true</span></span><br><span class="line">                    beta.kubernetes.io/instance-type=n1-standard-1</span><br><span class="line">Conditions:</span><br><span class="line">  Type                 Status  LastHeartbeatTime                 LastTransitionTime                Reason                       Message</span><br><span class="line">  ----                 ------  -----------------                 ------------------                ------                       -------</span><br><span class="line">  KernelDeadlock       False   Fri, 05 Oct 2018 16:19:13 +0800   Fri, 05 Oct 2018 16:02:10 +0800   KernelHasNoDeadlock          kernel has no deadlock</span><br><span class="line">  NetworkUnavailable   False   Fri, 05 Oct 2018 16:03:24 +0800   Fri, 05 Oct 2018 16:03:24 +0800   RouteCreated                 RouteController created a route</span><br><span class="line">  OutOfDisk            False   Fri, 05 Oct 2018 16:19:28 +0800   Fri, 05 Oct 2018 16:03:05 +0800   KubeletHasSufficientDisk     kubelet has sufficient disk space available</span><br><span class="line">  MemoryPressure       False   Fri, 05 Oct 2018 16:19:28 +0800   Fri, 05 Oct 2018 16:03:05 +0800   KubeletHasSufficientMemory   kubelet has sufficient memory available</span><br><span class="line">  DiskPressure         False   Fri, 05 Oct 2018 16:19:28 +0800   Fri, 05 Oct 2018 16:03:05 +0800   KubeletHasNoDiskPressure     kubelet has no disk pressure</span><br><span class="line">  Ready                True    Fri, 05 Oct 2018 16:19:28 +0800   Fri, 05 Oct 2018 16:03:25 +0800   KubeletReady                 kubelet is posting ready status. AppArmor enabled</span><br><span class="line"></span><br><span class="line">Capacity:</span><br><span class="line"> cpu:     1</span><br><span class="line"> memory:  3794356Ki</span><br><span class="line"> pods:    110</span><br><span class="line">Allocatable:</span><br><span class="line"> cpu:     940m</span><br><span class="line"> memory:  2708916Ki</span><br><span class="line"> pods:    110</span><br><span class="line"></span><br><span class="line">System Info:</span><br><span class="line"> Machine ID:                 605240950218bb5526044a53b5ab7a50</span><br><span class="line"> System UUID:                60524095-0218-BB55-2604-4A53B5AB7A50</span><br><span class="line"> Boot ID:                    681a9cb3-2848-42ef-a432-bdb752abbdf9</span><br><span class="line"> Kernel Version:             4.4.111+</span><br><span class="line"> OS Image:                   Container-Optimized OS from Google</span><br><span class="line"> Operating System:           linux</span><br><span class="line"> Architecture:               amd64</span><br><span class="line"> Container Runtime Version:  docker://17.3.2</span><br><span class="line"> Kubelet VersionNode gke-kubr-cluster-default-pool-a565d9f3-295j status is now: NodeReady:            v1.9.7-gke.6</span><br><span class="line"> Kube-Proxy Version:         v1.9.7-gke.6</span><br><span class="line">PodCIDR:                     10.36.1.0/24</span><br><span class="line">ProviderID:                  gce://kubernetes-218323/asia-east1-b/gke-kubr-cluster-default-pool-a565d9f3-295j</span><br><span class="line">Non-terminated Pods:         (4 <span class="keyword">in</span> total)</span><br><span class="line">  Namespace                  Name                                                      CPU Requests  CPU Limits  Memory Requests  Memory Limits</span><br><span class="line">  ---------                  ----                                                      ------------  ----------  ---------------  -------------</span><br><span class="line">  kube-system                fluentd-gcp-v2.0.17-57pxm                                 100m (10%)    0 (0%)      200Mi (7%)       300Mi (11%)</span><br><span class="line">  kube-system                kube-proxy-gke-kubr-cluster-default-pool-a565d9f3-295j    100m (10%)    0 (0%)      0 (0%)           0 (0%)</span><br><span class="line">  kube-system                kubernetes-dashboard-6c884d96c-dm6sr                      50m (5%)      100m (10%)  100Mi (3%)       300Mi (11%)</span><br><span class="line">  kube-system                metrics-server-v0.2.1-7f8dd98c8f-89xxh                    53m (5%)      148m (15%)  154Mi (5%)       404Mi (15%)</span><br><span class="line">Allocated resources:</span><br><span class="line">  (Total limits may be over 100 percent, i.e., overcommitted.)</span><br><span class="line">  Resource  Requests     Limits</span><br><span class="line">  --------  --------     ------</span><br><span class="line">  cpu       303m (32%)   248m (26%)</span><br><span class="line">  memory    454Mi (17%)  1004Mi (37%)</span><br></pre></td></tr></table></figure>
+
+<h2 id="刪除-GKE-Cluster"><a href="#刪除-GKE-Cluster" class="headerlink" title="刪除 GKE Cluster"></a>刪除 GKE Cluster</h2><p>練習完的 GKE Cluster 記得要刪除, 不然是會一直算錢的</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ gcloud container clusters delete [NAME]</span><br><span class="line">The following clusters will be deleted.</span><br><span class="line"> - [kubr-cluster] <span class="keyword">in</span> [asia-east1-b]</span><br><span class="line"></span><br><span class="line">Do you want to <span class="built_in">continue</span> (Y/n)?  Y</span><br><span class="line"></span><br><span class="line">Deleting cluster kubr-cluster...done.</span><br><span class="line"></span><br><span class="line">Deleted [https://container.googleapis.com/v1/projects/basic-radius-230404/zones/asia-east1-b/clusters/kubr-cluster].</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>Reference</p>
+<ul>
+<li>Kubernetes建置與執行</li>
+</ul>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/K8s/" rel="tag"># K8s</a>
+          
+            <a href="/tags/GCP/" rel="tag"># GCP</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  
+  <p class="site-author-name" itemprop="name">yctt</p>
+  <div class="site-description motion-element" itemprop="description"></div>
+</div>
+
+
+  <nav class="site-state motion-element">
+    
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">1</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+    
+
+    
+
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">tags</span>
+        
+      </div>
+    
+  </nav>
+
+
+
+
+
+
+
+  <div class="links-of-author motion-element">
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/yucheng77" title="GitHub &rarr; https://github.com/yucheng77" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="/s915113s@gmail.com" title="E-Mail &rarr; s915113s@gmail.com"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://twitter.com/Yucheng77" title="Twitter &rarr; https://twitter.com/Yucheng77" rel="noopener" target="_blank"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://www.facebook.com/yuchengt2" title="FB Page &rarr; https://www.facebook.com/yuchengt2" rel="noopener" target="_blank"><i class="fa fa-fw fa-facebook"></i>FB Page</a>
+      </span>
+    
+  </div>
+
+
+
+
+
+
+
+          
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#快速在GCP部屬-Kubernetes"><span class="nav-number">1.</span> <span class="nav-text">快速在GCP部屬 Kubernetes</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#在Ubuntu下安裝-gcloud-及-kubectl"><span class="nav-number">1.1.</span> <span class="nav-text">在Ubuntu下安裝 gcloud 及 kubectl</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#其他系統安裝-google-Cloud-SDK-方式"><span class="nav-number">1.1.1.</span> <span class="nav-text">其他系統安裝 google Cloud SDK 方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化-Cloud-SDK"><span class="nav-number">1.1.2.</span> <span class="nav-text">初始化 Cloud SDK</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#建立GKE-Cluster"><span class="nav-number">1.1.3.</span> <span class="nav-text">建立GKE Cluster</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#完成以上動作後-就已經有一個配置完成的cluster可以使用"><span class="nav-number">1.2.</span> <span class="nav-text">完成以上動作後, 就已經有一個配置完成的cluster可以使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#檢查目前-cluster的狀態"><span class="nav-number">1.2.1.</span> <span class="nav-text">檢查目前 cluster的狀態</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#列出所有的node"><span class="nav-number">1.2.2.</span> <span class="nav-text">列出所有的node</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查看某一個node的詳細資訊"><span class="nav-number">1.2.3.</span> <span class="nav-text">查看某一個node的詳細資訊</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#刪除-GKE-Cluster"><span class="nav-number">1.3.</span> <span class="nav-text">刪除 GKE Cluster</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yctt</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+
+
+
+  
+
+
+
+
+  
+
+
+
+<script>
+// GET RESPONSIVE HEIGHT PASSED FROM IFRAME
+
+window.addEventListener("message", function(e) {
+  var data = e.data;
+  if ((typeof data === 'string') && (data.indexOf('ciu_embed') > -1)) {
+    var featureID = data.split(':')[1];
+    var height = data.split(':')[2];
+    $(`iframe[data-feature=${featureID}]`).height(parseInt(height) + 30);
+  }
+}, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>
