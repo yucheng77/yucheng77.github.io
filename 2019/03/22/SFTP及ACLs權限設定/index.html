@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copy',
+      copy_success: 'Copied',
+      copy_failure: 'Copy failed'
+    }
+  };
+</script>
+
+  <meta name="description" content="SFTP Server 及 ACL 權限設定目的 紀錄建立 SFTP 及 ACL 權限設定">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SFTP及ACLs權限設定">
+<meta property="og:url" content="http://yoursite.com/2019/03/22/SFTP及ACLs權限設定/index.html">
+<meta property="og:site_name" content="yctt&#39;s Blog">
+<meta property="og:description" content="SFTP Server 及 ACL 權限設定目的 紀錄建立 SFTP 及 ACL 權限設定">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-07-24T05:41:52.343Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SFTP及ACLs權限設定">
+<meta name="twitter:description" content="SFTP Server 及 ACL 權限設定目的 紀錄建立 SFTP 及 ACL 權限設定">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2019/03/22/SFTP及ACLs權限設定/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  
+  <title>SFTP及ACLs權限設定 | yctt's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">yctt's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/22/SFTP及ACLs權限設定/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="yctt">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="yctt's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">SFTP及ACLs權限設定
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-03-22 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-22T00:00:00+08:00">2019-03-22</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-07-24 13:41:52" itemprop="dateModified" datetime="2019-07-24T13:41:52+08:00">2019-07-24</time>
+              </span>
+            
+          
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="SFTP-Server-及-ACL-權限設定"><a href="#SFTP-Server-及-ACL-權限設定" class="headerlink" title="SFTP Server 及 ACL 權限設定"></a>SFTP Server 及 ACL 權限設定</h1><h2 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h2><ul>
+<li>紀錄建立 SFTP 及 ACL 權限設定</li>
+</ul>
+<a id="more"></a>
+
+<h2 id="設定步驟"><a href="#設定步驟" class="headerlink" title="設定步驟"></a>設定步驟</h2><ol start="0">
+<li><p>建立一個交換資料用的通用群組</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ groupadd -r mysftp</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在 home 建立交換資料用的目錄</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir /home/mysftp</span><br><span class="line">$ ls -alF /home/</span><br><span class="line">total 0</span><br><span class="line">drwxr-xr-x  4 root     root      37 Mar 26 08:31 ./</span><br><span class="line">dr-xr-xr-x 18 root     root     257 Mar 26 07:32 ../</span><br><span class="line">drwxr-xr-x  3 root     root      16 Mar 26 08:37 mysftp/</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>設定 /etc/ssh/sshd_config</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br></pre></td><td class="code"><pre><span class="line">....</span><br><span class="line"><span class="comment">#Port 22</span></span><br><span class="line"><span class="comment"># 設定 SSH 僅使用 IPv4 網路功能</span></span><br><span class="line">AddressFamily inet</span><br><span class="line"><span class="comment">#ListenAddress 0.0.0.0</span></span><br><span class="line"><span class="comment">#ListenAddress ::</span></span><br><span class="line"></span><br><span class="line">HostKey /etc/ssh/ssh_host_rsa_key</span><br><span class="line"><span class="comment">#HostKey /etc/ssh/ssh_host_dsa_key</span></span><br><span class="line">HostKey /etc/ssh/ssh_host_ecdsa_key</span><br><span class="line">HostKey /etc/ssh/ssh_host_ed25519_key</span><br><span class="line"></span><br><span class="line"><span class="comment"># Ciphers and keying</span></span><br><span class="line"><span class="comment">#RekeyLimit default none</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Logging</span></span><br><span class="line"><span class="comment">#SyslogFacility AUTH</span></span><br><span class="line">SyslogFacility AUTHPRIV</span><br><span class="line"><span class="comment">#LogLevel INFO</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Authentication:</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#LoginGraceTime 2m</span></span><br><span class="line">PermitRootLogin forced-commands-only</span><br><span class="line"><span class="comment">#StrictModes yes</span></span><br><span class="line"><span class="comment">#MaxAuthTries 6</span></span><br><span class="line"><span class="comment">#MaxSessions 10</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#PubkeyAuthentication yes</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The default is to check both .ssh/authorized_keys and .ssh/authorized_keys2</span></span><br><span class="line"><span class="comment"># but this is overridden so installations will only check .ssh/authorized_keys</span></span><br><span class="line">AuthorizedKeysFile .ssh/authorized_keys</span><br><span class="line"></span><br><span class="line"><span class="comment">#AuthorizedPrincipalsFile none</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># For this to work you will also need host keys in /etc/ssh/ssh_known_hosts</span></span><br><span class="line"><span class="comment">#HostbasedAuthentication no</span></span><br><span class="line"><span class="comment"># Change to yes if you don't trust ~/.ssh/known_hosts for</span></span><br><span class="line"><span class="comment"># HostbasedAuthentication</span></span><br><span class="line"><span class="comment">#IgnoreUserKnownHosts no</span></span><br><span class="line"><span class="comment"># Don't read the user's ~/.rhosts and ~/.shosts files</span></span><br><span class="line"><span class="comment">#IgnoreRhosts yes</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># To disable tunneled clear text passwords, change to no here!</span></span><br><span class="line"><span class="comment"># 為了讓使用者登入密碼，下列需改為 Yes</span></span><br><span class="line">PasswordAuthentication yes</span><br><span class="line"><span class="comment">#PermitEmptyPasswords no</span></span><br><span class="line"><span class="comment">#PasswordAuthentication no</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Change to no to disable s/key passwords</span></span><br><span class="line"><span class="comment">#ChallengeResponseAuthentication yes</span></span><br><span class="line">ChallengeResponseAuthentication no</span><br><span class="line"></span><br><span class="line"><span class="comment"># Kerberos options</span></span><br><span class="line"><span class="comment">#KerberosAuthentication no</span></span><br><span class="line"><span class="comment">#KerberosOrLocalPasswd yes</span></span><br><span class="line"><span class="comment">#KerberosTicketCleanup yes</span></span><br><span class="line"><span class="comment">#KerberosGetAFSToken no</span></span><br><span class="line"><span class="comment">#KerberosUseKuserok yes</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># GSSAPI options</span></span><br><span class="line">GSSAPIAuthentication yes</span><br><span class="line">GSSAPICleanupCredentials no</span><br><span class="line"><span class="comment">#GSSAPIStrictAcceptorCheck yes</span></span><br><span class="line"><span class="comment">#GSSAPIKeyExchange no</span></span><br><span class="line"><span class="comment">#GSSAPIEnablek5users no</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Set this to 'yes' to enable PAM authentication, account processing,</span></span><br><span class="line"><span class="comment"># and session processing. If this is enabled, PAM authentication will</span></span><br><span class="line"><span class="comment"># be allowed through the ChallengeResponseAuthentication and</span></span><br><span class="line"><span class="comment"># PasswordAuthentication.  Depending on your PAM configuration,</span></span><br><span class="line"><span class="comment"># PAM authentication via ChallengeResponseAuthentication may bypass</span></span><br><span class="line"><span class="comment"># the setting of "PermitRootLogin without-password".</span></span><br><span class="line"><span class="comment"># If you just want the PAM account and session checks to run without</span></span><br><span class="line"><span class="comment"># PAM authentication, then enable this but set PasswordAuthentication</span></span><br><span class="line"><span class="comment"># and ChallengeResponseAuthentication to 'no'.</span></span><br><span class="line"><span class="comment"># WARNING: 'UsePAM no' is not supported in Red Hat Enterprise Linux and may cause several</span></span><br><span class="line"><span class="comment"># problems.</span></span><br><span class="line">UsePAM yes</span><br><span class="line"></span><br><span class="line"><span class="comment">#AllowAgentForwarding yes</span></span><br><span class="line"><span class="comment">#AllowTcpForwarding yes</span></span><br><span class="line"><span class="comment">#GatewayPorts no</span></span><br><span class="line">X11Forwarding yes</span><br><span class="line"><span class="comment">#X11DisplayOffset 10</span></span><br><span class="line"><span class="comment">#X11UseLocalhost yes</span></span><br><span class="line"><span class="comment">#PermitTTY yes</span></span><br><span class="line"><span class="comment">#PrintMotd yes</span></span><br><span class="line"><span class="comment">#PrintLastLog yes</span></span><br><span class="line"><span class="comment">#TCPKeepAlive yes</span></span><br><span class="line"><span class="comment">#UseLogin no</span></span><br><span class="line"><span class="comment">#UsePrivilegeSeparation sandbox</span></span><br><span class="line"><span class="comment">#PermitUserEnvironment no</span></span><br><span class="line"><span class="comment">#Compression delayed</span></span><br><span class="line"><span class="comment"># 設定限制連線時間 600 秒</span></span><br><span class="line">ClientAliveInterval 600</span><br><span class="line"><span class="comment">#ClientAliveCountMax 3</span></span><br><span class="line"><span class="comment">#ShowPatchLevel no</span></span><br><span class="line"><span class="comment">#UseDNS yes</span></span><br><span class="line"><span class="comment">#PidFile /var/run/sshd.pid</span></span><br><span class="line"><span class="comment">#MaxStartups 10:30:100</span></span><br><span class="line"><span class="comment">#PermitTunnel no</span></span><br><span class="line"><span class="comment">#ChrootDirectory none</span></span><br><span class="line"><span class="comment">#VersionAddendum none</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># no default banner path</span></span><br><span class="line"><span class="comment">#Banner none</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Accept locale-related environment variables</span></span><br><span class="line">AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES</span><br><span class="line">AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT</span><br><span class="line">AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE</span><br><span class="line">AcceptEnv XMODIFIERS</span><br><span class="line"></span><br><span class="line"><span class="comment"># override default of no subsystems</span></span><br><span class="line"><span class="comment"># 將本來的 Subsystem 設定註解起來, 改成下面的設定</span></span><br><span class="line"><span class="comment">#Subsystem sftp  /usr/libexec/openssh/sftp-server</span></span><br><span class="line">Subsystem sftp internal-sftp -l INFO -f AUTH -u 0002</span><br><span class="line"></span><br><span class="line"><span class="comment"># Example of overriding settings on a per-user basis</span></span><br><span class="line"><span class="comment">#Match User anoncvs</span></span><br><span class="line"><span class="comment">#       X11Forwarding no</span></span><br><span class="line"><span class="comment">#       AllowTcpForwarding no</span></span><br><span class="line"><span class="comment">#       PermitTTY no</span></span><br><span class="line"><span class="comment">#       ForceCommand cvs server</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 設定 mysftp 群組內的使用者登入時預設目錄到 /home/mysftp 底下</span></span><br><span class="line">Match group mysftp</span><br><span class="line">ChrootDirectory /home/mysftp</span><br><span class="line">ForceCommand internal-sftp</span><br><span class="line">X11Forwarding no</span><br><span class="line">AllowTcpForwarding no</span><br><span class="line"></span><br><span class="line">AuthorizedKeysCommand /usr/bin/timeout 5s /opt/aws/bin/curl_authorized_keys %u %f</span><br><span class="line">AuthorizedKeysCommandUser ec2-instance-connect</span><br></pre></td></tr></table></figure>
+
+<p> 設定完後存檔重啟服務</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">＄ service sshd restart</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>建立使用者</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 建立使用者並將 home 目錄改到 /home/mysftp</span></span><br><span class="line">$ useradd -d /home/mysftp -s /usr/sbin/nologin ftpuser</span><br><span class="line"><span class="comment"># 設定密碼</span></span><br><span class="line">$ passwd ftpuser</span><br><span class="line"><span class="comment"># 將使用者加到 mysftp 群組內</span></span><br><span class="line">$ usermod -aG myftp ftpuser</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>建立交換資料用目錄</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 先確認目前 home 目錄狀態</span></span><br><span class="line">$ <span class="built_in">cd</span> /home</span><br><span class="line">$ ls -al</span><br><span class="line">drwxr-xr-x  8 root     root      4096 Oct 28 15:33 .</span><br><span class="line">dr-xr-xr-x 25 root     root      4096 Nov 10 09:05 ..</span><br><span class="line">drwxr-xr-x  3 root     root      4096 Nov  1 14:39 myftp</span><br><span class="line"></span><br><span class="line"><span class="comment"># 建立 1234 目錄區分不同情境時的資料交換使用</span></span><br><span class="line">$ mkdir /home/myftp/1234</span><br><span class="line">$ chmod 550 /home/myftp/1234</span><br><span class="line">$ ls -alF /home/myftp/</span><br><span class="line">total 0</span><br><span class="line">drwxr-xr-x  3 root root 16 Mar 26 08:37 ./</span><br><span class="line">drwxr-xr-x  4 root root 37 Mar 26 08:31 ../</span><br><span class="line">dr-xr-x---  3 root root 24 Mar 26 10:59 1234/</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>設定 ACL 權限控管</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 將 ftpuser 設定特殊權限</span></span><br><span class="line">$ setfacl -m u:ftpuser:rwx /home/myftp/1234</span><br><span class="line">$ getfacl /home/myftp/1234</span><br><span class="line"><span class="comment"># file: from_91app/</span></span><br><span class="line"><span class="comment"># owner: root</span></span><br><span class="line"><span class="comment"># group: root</span></span><br><span class="line">user::r-x</span><br><span class="line">user:ftpuser:rwx</span><br><span class="line">group::r-x</span><br><span class="line">mask::rwx</span><br><span class="line">other::---</span><br><span class="line"></span><br><span class="line">設定完後權限部分會多一個 + 號</span><br><span class="line">$ ls -alF /home/myftp/</span><br><span class="line">dr-xrwx---+ 3 root root 42 Mar 26 10:59 1234/</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>測試上傳檔案</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ sftp ftpuser@123.123.123.123</span><br><span class="line">sftp&gt; <span class="built_in">cd</span> 1234</span><br><span class="line">sftp&gt; put test3.md</span><br><span class="line">Uploading test3.md to /mysftp/1234/test3.md</span><br><span class="line">test3.md        100%    0     0.0KB/s   00:00</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>收工</p>
+</li>
+</ol>
+<hr>
+<p>Ref.</p>
+<ol>
+<li><a href="http://linux.vbird.org/linux_basic/0410accountmanager.php#acl_talk_cmd" target="_blank" rel="noopener">鳥哥的 Linux 私房菜 - Linux 帳號管理與 ACL 權限設定</a></li>
+<li><a href="http://linux.vbird.org/linux_server/0410vsftpd.php" target="_blank" rel="noopener">鳥哥的 Linux 私房菜 - 檔案伺服器之三： FTP 伺服器</a></li>
+<li><a href="https://blog.miniasp.com/post/2012/08/13/Secure-vsFTPd-with-chroot-and-multiple-user-access-permission-tips" target="_blank" rel="noopener">The Will Will Web - 如何安全地設定 vsftpd 提供多人同時使用 FTP 更新網站資料</a></li>
+<li>man 5 sshd_config</li>
+</ol>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/10/04/快速在-GCP-部屬-Kubernetes/" rel="next" title="快速在 GCP 部屬 Kubernetes">
+                <i class="fa fa-chevron-left"></i> 快速在 GCP 部屬 Kubernetes
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  
+  <p class="site-author-name" itemprop="name">yctt</p>
+  <div class="site-description motion-element" itemprop="description"></div>
+</div>
+
+
+  <nav class="site-state motion-element">
+    
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+    
+
+    
+
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+        
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">tags</span>
+        
+      </div>
+    
+  </nav>
+
+
+
+
+
+
+
+  <div class="links-of-author motion-element">
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/yucheng77" title="GitHub &rarr; https://github.com/yucheng77" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="/s915113s@gmail.com" title="E-Mail &rarr; s915113s@gmail.com"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+
+
+
+
+
+          
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#SFTP-Server-及-ACL-權限設定"><span class="nav-number">1.</span> <span class="nav-text">SFTP Server 及 ACL 權限設定</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#目的"><span class="nav-number">1.1.</span> <span class="nav-text">目的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#設定步驟"><span class="nav-number">1.2.</span> <span class="nav-text">設定步驟</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yctt</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+
+
+
+  
+
+
+
+
+  
+
+
+
+<script>
+// GET RESPONSIVE HEIGHT PASSED FROM IFRAME
+
+window.addEventListener("message", function(e) {
+  var data = e.data;
+  if ((typeof data === 'string') && (data.indexOf('ciu_embed') > -1)) {
+    var featureID = data.split(':')[1];
+    var height = data.split(':')[2];
+    $(`iframe[data-feature=${featureID}]`).height(parseInt(height) + 30);
+  }
+}, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>
